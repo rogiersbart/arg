@@ -31,13 +31,13 @@ is provided, the argument vector is preprocessed first, and a named list with
 arguments and options is returned instead.
 }
 \examples{
-assignInNamespace("arguments", base::c("one", "two", "-o", "-h"), "arg") # for interactive testing
+assignInNamespace("arguments", base::c("one", "2", "-o", "-h"), "arg") # for interactive testing
 arg::v(
   ~name, ~short, ~long, ~default, ~type, ~help,
-  "arg1", NA, NA, "default_arg1_value", "character", "First argument (default = \"\%default\")",
-  "arg2", NA, NA, "default_arg2_value", "integer", "Second argument (default = \"\%default\")",
+  "arg1", NA, NA, "default_arg1_value", "character", "First argument",
+  "arg2", NA, NA, "1", "integer", "Second argument",
   "opt1", "o", "option1", NA, "logical", "Logical option",
-  "opt2", "p", "option2", "Default", "character", "Character option (default = \"\%default\")",
+  "opt2", "p", "option2", "Default", "character", "Character option",
   header = "This command line tool provides functionality to ..."
 )
 }

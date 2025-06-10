@@ -33,13 +33,13 @@ c <- function() {
 #' @export
 #'
 #' @examples
-#' assignInNamespace("arguments", base::c("one", "two", "-o", "-h"), "arg") # for interactive testing
+#' assignInNamespace("arguments", base::c("one", "2", "-o", "-h"), "arg") # for interactive testing
 #' arg::v(
 #'   ~name, ~short, ~long, ~default, ~type, ~help,
-#'   "arg1", NA, NA, "default_arg1_value", "character", "First argument (default = \"%default\")",
-#'   "arg2", NA, NA, "default_arg2_value", "integer", "Second argument (default = \"%default\")",
+#'   "arg1", NA, NA, "default_arg1_value", "character", "First argument",
+#'   "arg2", NA, NA, "1", "integer", "Second argument",
 #'   "opt1", "o", "option1", NA, "logical", "Logical option",
-#'   "opt2", "p", "option2", "Default", "character", "Character option (default = \"%default\")",
+#'   "opt2", "p", "option2", "Default", "character", "Character option",
 #'   header = "This command line tool provides functionality to ..."
 #' )
 v <- function(
@@ -50,6 +50,7 @@ v <- function(
   expose = FALSE
 ) {
   df <- tibble::tribble(...)
+  df$help <- ifelse(is.na(df$default), df$help, df$help |> paste("(default = \"%default\")"))
   df_list <- apply(df, 1, \(x) as.list(x[!is.na(x)]))
   expose_env <- parent.frame()
   do.call(v_list, df_list |> append(list(title = title, header = header, footer = footer, expose = expose, expose_env = expose_env)))
@@ -139,14 +140,14 @@ v_list <- function(..., title, header, footer, expose, expose_env) {
       )
     }
   }
-  is_opt <- which(grepl("^-", arg:::arguments))
+  is_opt <- which(grepl("^-", arguments))
   is_opt <- base::c(is_opt, is_opt + 1)
-  is_arg <- 1:length(arg:::arguments)
+  is_arg <- 1:length(arguments)
   is_arg <- is_arg[!is_arg %in% is_opt]
   if (length(args) != 0) {
     for (i in seq_along(is_arg)) {
-      arg:::arguments <- append(
-        arg:::arguments,
+      arguments <- append(
+        arguments,
         paste0("--ARG-", arg_names[i]),
         after = is_arg[i] - 2 + i
       )
@@ -154,7 +155,7 @@ v_list <- function(..., title, header, footer, expose, expose_env) {
   }
   a <- optparse::parse_args(
     p,
-    arg:::arguments,
+    arguments,
     positional_arguments = base::c(0, length(args)),
     convert_hyphens_to_underscores = TRUE
   )
