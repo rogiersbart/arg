@@ -1,5 +1,6 @@
+arguments <- NULL
 .onLoad <- function(libname, pkgname) {
-  arguments <<- commandArgs(TRUE)
+  assignInNamespace("arguments", commandArgs(TRUE), "arg")
 }
 .onAttach <- function(libname, pkgname) {
   std::err("! Package {{{.yellow('arg')}}} is still in its experimental lifecycle stage.")

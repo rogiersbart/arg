@@ -31,7 +31,7 @@ is provided, the argument vector is preprocessed first, and a named list with
 arguments and options is returned instead.
 }
 \examples{
-arguments <- base::c("one", "two", "-o", "-h") # for interactive testing
+assignInNamespace("arguments", base::c("one", "two", "-o", "-h"), "arg") # for interactive testing
 arg::v(
   ~name, ~short, ~long, ~default, ~type, ~help,
   "arg1", NA, NA, "default_arg1_value", "character", "First argument (default = \"\%default\")",

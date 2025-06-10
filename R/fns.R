@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples
-#' arguments <- base::c("one", "two","three") # for interactive testing
+#' assignInNamespace("arguments", base::c("one", "two","three"), "arg") # for interactive testing
 #' arg::v()
 c <- function() {
   length(arguments)
@@ -33,7 +33,7 @@ c <- function() {
 #' @export
 #'
 #' @examples
-#' arguments <- base::c("one", "two", "-o", "-h") # for interactive testing
+#' assignInNamespace("arguments", base::c("one", "two", "-o", "-h"), "arg") # for interactive testing
 #' arg::v(
 #'   ~name, ~short, ~long, ~default, ~type, ~help,
 #'   "arg1", NA, NA, "default_arg1_value", "character", "First argument (default = \"%default\")",
@@ -51,9 +51,10 @@ v <- function(
 ) {
   df <- tibble::tribble(...)
   df_list <- apply(df, 1, \(x) as.list(x[!is.na(x)]))
-  do.call(v_list, df_list |> append(list(title = title, header = header, footer = footer, expose = expose)))
+  expose_env <- parent.frame()
+  do.call(v_list, df_list |> append(list(title = title, header = header, footer = footer, expose = expose, expose_env = expose_env)))
 }
-v_list <- function(..., title, header, footer, expose) {
+v_list <- function(..., title, header, footer, expose, expose_env) {
   dots <- list(...)
   if (length(dots) == 0) return(arguments)
   is_opt <- lapply(dots, \(x) any(names(x) %in% base::c("short", "long"))) |> as.logical()
@@ -110,48 +111,57 @@ v_list <- function(..., title, header, footer, expose) {
     }
   )
   arg_names <- rep(NA_character_, length(args))
-  for (i in 1:length(opts)) {
-    # TODO if option has no default, it should be FALSE and action = store_true
-    p <- p |> optparse::add_option(
-      dest = opts[[i]][["name"]],
-      opt_str = base::c(paste0("--", opts[[i]][["long"]]),
-                  paste0("-", opts[[i]][["short"]])),
-      default = if (opts[[i]]$type == "logical") FALSE else opts[[i]][["default"]],
-      action = if (opts[[i]]$type == "logical") "store_true" else "store",
-      help = opts[[i]]$help
-    )
+  if (length(opts) != 0) {
+    for (i in 1:length(opts)) {
+      # TODO expose metavar?
+      p <- p |> optparse::add_option(
+        dest = opts[[i]][["name"]],
+        opt_str = base::c(paste0("--", opts[[i]][["long"]]),
+                    paste0("-", opts[[i]][["short"]])),
+        default = if (opts[[i]]$type == "logical") FALSE else opts[[i]][["default"]],
+        action = if (opts[[i]]$type == "logical") "store_true" else "store",
+        help = opts[[i]]$help,
+        type = opts[[i]]$type
+      )
+    }
   }
-  for (i in 1:length(args)) {
-    arg_names[i] <- args[[i]][["name"]]
-    p <- p |> optparse::add_option(
-      dest = args[[i]][["name"]],
-      opt_str = paste0("--ARG-", args[[i]][["name"]]),
-      default = args[[i]][["default"]],
-      action = "store",
-      help = args[[i]]$help
-    )
+  if (length(args) != 0) {
+    for (i in 1:length(args)) {
+      arg_names[i] <- args[[i]][["name"]]
+      # TODO expose metavar?
+      p <- p |> optparse::add_option(
+        dest = args[[i]][["name"]],
+        opt_str = paste0("--ARG-", args[[i]][["name"]]),
+        default = args[[i]][["default"]],
+        action = "store",
+        help = args[[i]]$help,
+        type = args[[i]]$type
+      )
+    }
   }
-  is_opt <- which(grepl("^-", arguments))
+  is_opt <- which(grepl("^-", arg:::arguments))
   is_opt <- base::c(is_opt, is_opt + 1)
-  is_arg <- 1:length(arguments)
+  is_arg <- 1:length(arg:::arguments)
   is_arg <- is_arg[!is_arg %in% is_opt]
-  for (i in seq_along(is_arg)) {
-    arguments <- append(
-      arguments,
-      paste0("--ARG-", arg_names[i]),
-      after = is_arg[i] - 2 + i
-    )
+  if (length(args) != 0) {
+    for (i in seq_along(is_arg)) {
+      arg:::arguments <- append(
+        arg:::arguments,
+        paste0("--ARG-", arg_names[i]),
+        after = is_arg[i] - 2 + i
+      )
+    }
   }
   a <- optparse::parse_args(
     p,
-    arguments,
+    arg:::arguments,
     positional_arguments = base::c(0, length(args)),
     convert_hyphens_to_underscores = TRUE
   )
   a$options <- a$options[!names(a$options) == "help"]
   if (expose) {
     # FIXME avoid help here!
-    list2env(a$options, parent.frame())
+    list2env(a$options, expose_env)
     return(invisible())
   }
   a$options

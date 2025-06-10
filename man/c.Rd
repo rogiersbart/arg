@@ -13,6 +13,6 @@ The number of raw arguments provided in the command line call.
 Access the number of arguments in the argument vector.
 }
 \examples{
-arguments <- base::c("one", "two","three") # for interactive testing
+assignInNamespace("arguments", base::c("one", "two","three"), "arg") # for interactive testing
 arg::v()
 }
