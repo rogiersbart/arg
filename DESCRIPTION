@@ -1,0 +1,28 @@
+Package: arg
+Title: A simple modern interface to command line arguments
+Version: 0.0.0.9000
+Authors@R:
+    c(
+        person(
+            given = "Bart",
+            family = "Rogiers",
+            email = "bart.rogiers@sckcen.be",
+            role = c("cre", "aut"),
+            comment = c(
+              ORCID = "0000-0002-8836-0988",
+              url = "<https://rogiersbart.github.io>"
+            )
+        ),
+        person("SCK CEN", role = c("cph", "fnd"))
+    )
+Description:
+    This package provides a wrapper around {optparse} to easily handle command
+    line arguments.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    optparse,
+    tibble,
+    std
