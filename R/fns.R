@@ -69,41 +69,45 @@ v_list <- function(..., title, header, footer, expose, expose_env) {
         cat("\n", file = stderr())
         std::err("{header}")
       }
-      cat("\nArguments:\n\n", file = stderr())
-      for (ii in seq_along(options_list)) {
-        option <- options_list[[ii]]
-        if (!grepl("^--ARG-", option@long_flag)) next
-        cat("  ", file = stderr())
-        if (!is.null(option@long_flag)) {
-          argname <- toupper(gsub("^ARG-", "", option@metavar))
-          std::err('{.red(argname)}')
+      if (length(args) != 0) {
+        cat("\nArguments:\n\n", file = stderr())
+        for (ii in seq_along(options_list)) {
+          option <- options_list[[ii]]
+          if (!grepl("^--ARG-", option@long_flag)) next
+          cat("  ", file = stderr())
+          if (!is.null(option@long_flag)) {
+            argname <- toupper(gsub("^ARG-", "", option@metavar))
+            std::err('{.red(argname)}')
+          }
+          cat("\n", file = stderr())
+          std::err(paste0("i ", sub("%default", optparse:::as_string(option@default), option@help)))
+          cat("\n", file = stderr())
         }
-        cat("\n", file = stderr())
-        std::err(paste0("i ", sub("%default", optparse:::as_string(option@default), option@help)))
-        cat("\n", file = stderr())
       }
-      cat("\nOptions:\n\n", file = stderr())
-      for (ii in seq_along(options_list)) {
-        option <- options_list[[ii]]
-        if (grepl("^--ARG-", option@long_flag)) next
-        flags <- list(short = "", long = "")
-        if (!is.na(option@short_flag)) {
-          flags$short <- option@short_flag
-          if (optparse:::option_needs_argument(option)) {
-            flags$short <- paste(flags$short, toupper(option@metavar))
+      if (length(opts) != 0) {
+        cat("\nOptions:\n\n", file = stderr())
+        for (ii in seq_along(options_list)) {
+          option <- options_list[[ii]]
+          if (grepl("^--ARG-", option@long_flag)) next
+          flags <- list(short = "", long = "")
+          if (!is.na(option@short_flag)) {
+            flags$short <- option@short_flag
+            if (optparse:::option_needs_argument(option)) {
+              flags$short <- paste(flags$short, toupper(option@metavar))
+            }
           }
-        }
-        if (!is.null(option@long_flag)) {
-          flags$long <- option@long_flag
-          if (optparse:::option_needs_argument(option)) {
-            flags$long <- paste0(flags$long, "=", toupper(option@metavar))
+          if (!is.null(option@long_flag)) {
+            flags$long <- option@long_flag
+            if (optparse:::option_needs_argument(option)) {
+              flags$long <- paste0(flags$long, "=", toupper(option@metavar))
+            }
           }
+          cat("  ", file = stderr())
+          std::err("{.blue(flags$short)}, {.blue(flags$long)}")
+          cat("\n", file = stderr())
+          std::err(paste0("i ", sub("%default", optparse:::as_string(option@default), option@help)))
+          cat("\n", file = stderr())
         }
-        cat("  ", file = stderr())
-        std::err("{.blue(flags$short)}, {.blue(flags$long)}")
-        cat("\n", file = stderr())
-        std::err(paste0("i ", sub("%default", optparse:::as_string(option@default), option@help)))
-        cat("\n", file = stderr())
       }
       if (footer != "")  {
         cat("\n", file = stderr())
